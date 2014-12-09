@@ -166,19 +166,13 @@ class DataStreamAPI(object):
 #       logger.debug("Json package status return:\n%s"% (json.dumps(result, sort_keys=True, indent=2)))
 #        logger.debug(" ".join(cmd))
         try:
+            logger.debug("status url: %s" % url)
             result = self.session.get(url)
         except requests.ConnectionError as e:
             logger.error("connection error on status get: %s" % e)
-            try:
-                json_return =  json.loads(result)
-                return json_return
-            except ValueError:
-               logger.critical("Unable to parse json return from status get: %s"% result)
-               logger.critical("cmd:%s" % " ".join(cmd))
-               time.sleep(2) 
-        sys.exit(1)
-
-
+            sys.exit(1)
+        return result.json()
+       
     def configure_logging(self,level):
         global logger, logger_results 
         log_format_details = '%s(asctime)-15s %(name)-5s %(levelname)-8s %(message)s'
