@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import dsapi
 import os, sys, argparse
 import time
