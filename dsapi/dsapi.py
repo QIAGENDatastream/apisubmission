@@ -20,7 +20,6 @@ class tlsHttpAdapter(HTTPAdapter):
 #####end ssl mod####
 
 
-
 class DataStreamAPI(object):
     def __init__(self, endpoint, clientid, clientsecret,log_level="WARNING"):
         self._endpoint = endpoint
@@ -28,8 +27,9 @@ class DataStreamAPI(object):
         self._clientsecret = clientsecret
         self._authid = None
         self.session = requests.Session()
-        self.session.mount(endpoint, tlsHttpAdapter())       
-        self.configure_logging(log_level)
+        self.session.mount(endpoint, tlsHttpAdapter())
+        self.logger = self.configure_logging(log_level)
+        
 
     @property
     def authid(self):
@@ -63,9 +63,9 @@ class DataStreamAPI(object):
         """low-level private method to obtain a refreshed auth key from DataStream API
         """
         url = "%soauth/access_token/?grant_type=client_credentials&client_id=%s&client_secret=%s" % (endpoint, clientid, clientsecret)
-        logger.debug("Auth key url:%s" % (url))
+        self.logger.debug("Auth key url:%s" % (url))
         r = self.session.get(url)
-        logger.debug("request status: %s" % (r.status_code))
+        self.logger.debug("request status: %s" % (r.status_code))
         if r.status_code != 200:
             for x in range(10):
                 time.sleep(1)
@@ -73,14 +73,14 @@ class DataStreamAPI(object):
                 if r.status_code == 200:
                     break;
         if r.status_code !=200:
-            logger.critical("Unable to get auth key after 10 tries, last status_code: %s" % r.status_code)
+            self.logger.critical("Unable to get auth key after 10 tries, last status_code: %s" % r.status_code)
             sys.exit(1)
         data = r.json()
-        logger.debug("json return from auth key url: %s" % (data))
+        self.logger.debug("json return from auth key url: %s" % (data))
         if "access_token" in data:
             return data['access_token']
         else:
-            logger.critical("Unable to obtain auth key, json return: %s" % data)
+            self.logger.critical("Unable to obtain auth key, json return: %s" % data)
             sys.exit(1)
             #should probably print a meaningful error FIXME
             return None
@@ -92,12 +92,12 @@ class DataStreamAPI(object):
     def export_vcf(self, dp_id, output_file="temp.vcf"):
         print dp_id
         url = "%s/export/%s" % (self.endpoint, urllib.quote_plus(dp_id))
-        logger.info("Export url: %s" % url)
+        self.logger.info("Export url: %s" % url)
         params = {}
         self.refresh_token()
         params['access_token']= self._authid
         r = self.session.get(url, params=params, stream=True,headers={"Authorization":self._authid})
-        logger.info("Export status code: %s" % r.status_code)
+        self.logger.info("Export status code: %s" % r.status_code)
         return_data = ""
         with open(output_file, 'wb') as f:
             for chunk in r.iter_content(chunk_size=1024): 
@@ -114,34 +114,33 @@ class DataStreamAPI(object):
         and returns the URI to the data package
         FIXME: check authid validity and refresh if necessary
         """
-        global logger
-        logger.debug("Package archive: %s" % (zip_file_path))
+        self.logger.debug("Package archive: %s" % (zip_file_path))
         files = {'file':open(zip_file_path, 'rb')}
         url = "%sdatapackages/?useJavaPipeline=true" % (self.endpoint)
         params = extra_api_params
         params['access_token']= self._authid
         headers = dict()
         headers['Authorization']=self._authid
-        logger.debug("Start POSTing package to %s" % (url))
+        self.logger.info("Start POSTing package to %s" % (url))
         # my_config = {'verbose' : sys.stderr}
         # "config" kwarg has been disabled for new requests
         s = self.session
         r = s.post(url, files=files, data=params,headers=headers)
-        logger.debug("post url: %s headers: %s" % (r.url, headers))
-        logger.debug("Post Result: %s"% r.status_code)
+        self.logger.debug("post url: %s headers: %s" % (r.url, headers))
+        self.logger.debug("Post Result: %s"% r.status_code)
         if r.status_code != 201 and r.status_code!=200:
             for x in range(10):
                 time.sleep(.5)
                 r = s.post(url, files=files, data=params)
-                logger.debug("Post Result: %s"% r.status_code)
+                self.logger.debug("Post Result: %s"% r.status_code)
                 if r.status_code == 201 or r.status_code == 200:
                     break;
         if r.status_code !=201 and r.status_code !=200:
-            logger.critical("Unable to get post file after 10 tries, last status_code: %s" % r.status_code)
+            self.logger.critical("Unable to get post file after 10 tries, last status_code: %s" % r.status_code)
             return (None, r.text) 
         data = r.json()
-        logger.debug("Finished POSTing package to %s" % (url))
-        logger.debug("Json Package submission return:%s" % (json.dumps(r.json(), sort_keys = True, indent=2)))
+        self.logger.debug("Finished POSTing package to %s" % (url))
+        self.logger.debug("Json Package submission return:%s" % (json.dumps(r.json(), sort_keys = True, indent=2)))
         resource_uri = data['status-url']
         return (resource_uri, None)
 
@@ -162,27 +161,27 @@ class DataStreamAPI(object):
 #       cmd = ["curl", curl_params, package_uri]
 #       output = subprocess.Popen(" ".join(cmd), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE) 
 #       result = output.communicate()[0]
-#       logger.debug("Curl/Wget return code: %s" % curl.returncode)
-#       logger.debug("Json package status return:\n%s"% (json.dumps(result, sort_keys=True, indent=2)))
-#        logger.debug(" ".join(cmd))
+#       self.logger.debug("Curl/Wget return code: %s" % curl.returncode)
+#       self.logger.debug("Json package status return:\n%s"% (json.dumps(result, sort_keys=True, indent=2)))
+#        self.logger.debug(" ".join(cmd))
         try:
-            logger.debug("status url: %s" % url)
+            self.logger.debug("status url: %s" % url)
             result = self.session.get(url)
         except requests.ConnectionError as e:
-            logger.error("connection error on status get: %s" % e)
+            self.logger.error("connection error on status get: %s" % e)
             sys.exit(1)
         return result.json()
        
     def configure_logging(self,level):
-        global logger, logger_results 
+        if level == "DEBUG":
+            level = logging.DEBUG
+        else:
+            level == logging.WARNING
         log_format_details = '%s(asctime)-15s %(name)-5s %(levelname)-8s %(message)s'
         log_format_summary = '%(asctime)-15s   %(levelname)-8s    %(message)s'
         logger = logging.getLogger('datastream')
         logger.setLevel(level)
-
-        logger_results = logging.getLogger('datastream.results')
-        logger_results.setLevel(level)
-        
+       
         ch=logging.StreamHandler()
         ch.setLevel(level)
         formatter = logging.Formatter(log_format_summary)
@@ -195,9 +194,4 @@ class DataStreamAPI(object):
             formatter = logging.Formatter(log_format_details)
             filelog.setLevel(logging.DEBUG)
             logger.addHandler(filelog)
-            filelog = logging.FileHandler('summary-%s.log' % (datetimestamp))
-            formatter = logging.Formatter(log_format_summary)
-            filelog.setFormatter(formatter)
-            logger_results.addHandler(filelog)
-
-
+        return logger 

@@ -43,7 +43,7 @@ if __name__ == "__main__":
         print >>sys.stderr, "\n\nERROR:Please supply a status url or a DP_ID to make a status query"
         sys.exit(1)
     if args.dp_id:
-        status_url = "https://api-stable.ingenuity.com/v1/datapackages/"  + args.dp_id
+        status_url = "https://api.ingenuity.com/v1/datapackages/"  + args.dp_id
     else:
         status_url = args.status_url
     main(args.server, status_url, args.log_level)
