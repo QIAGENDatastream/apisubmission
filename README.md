@@ -1,6 +1,6 @@
 # INSTALLATION
 
-type python setup.py to install for all users
+type "[sudo] python setup.py install" to install for all users, or look at easy_install documentation to install in an alternate location
 
 make sure you set environment variables like so
 
