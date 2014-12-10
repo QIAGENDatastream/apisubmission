@@ -3,7 +3,7 @@ import os, sys, argparse
 import time
 
 def main(endpoint, files_to_upload, log_level):
-    api = ingapi.DataStreamAPI(endpoint, CLIENT_ID, CLIENT_SECRET, log_level=log_level)
+    api = dsapi.DataStreamAPI(endpoint, CLIENT_ID, CLIENT_SECRET, log_level=log_level)
     for file in files_to_upload:
         print >>sys.stderr, "Starting to upload %s" % file
         api.refresh_token()

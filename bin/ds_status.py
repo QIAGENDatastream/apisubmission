@@ -3,7 +3,7 @@ import os, sys, argparse
 import time
 
 def main(endpoint, resource_uri, log_level):
-    api = ingapi.DataStreamAPI(endpoint, CLIENT_ID, CLIENT_SECRET, log_level=log_level)
+    api = dsapi.DataStreamAPI(endpoint, CLIENT_ID, CLIENT_SECRET, log_level=log_level)
     print api.get_package_status(resource_uri)
 
 
