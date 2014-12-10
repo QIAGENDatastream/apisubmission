@@ -15,7 +15,7 @@ if __name__ == "__main__":
     if 'ING_CLIENT_ID' in os.environ:
         client_id = os.environ['ING_CLIENT_ID']
     parser = argparse.ArgumentParser("Simple Script to check status of package", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--server', action="store", dest="server", default="https://api-stable.ingenuity.com/datastream/api/v1/", help="url of upload endpoint")
+    parser.add_argument('--server', action="store", dest="server", default="https://api.ingenuity.com/datastream/api/v1/", help="url of upload endpoint")
     parser.add_argument('--status_url', action="store", dest="status_url", help="status_url_of_package")
     parser.add_argument('--dp_id', action="store", dest="dp_id", help="DP_ID of package")
     parser.add_argument('--client-secret', action="store", default=secret, dest="secret", help="supply client secret on the command line, or set an environment variable named ING_CLIENT_SECRET")
