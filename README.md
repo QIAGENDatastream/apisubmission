@@ -1,3 +1,7 @@
+# Convenient Python Interface for Integrating with DataStream API
+
+Collection of Python helper utilities useful for making API requests to DataStream. Key functionality include data package(s) submission and status monitoring. Built-in conveniences include automated access token refresh, multiple package handling, and HTTP connection pooling.
+
 # INSTALLATION
 
 type "[sudo] python setup.py install" to install for all users, or look at easy_install documentation to install in an alternate location
