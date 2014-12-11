@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 import dsapi
-import os, sys, argparse
+import os, sys, argparse, json
 import time
-
+import pygments
+from pygments.lexers import JsonLexer
+from pygments.formatters import TerminalFormatter
 def main(endpoint, resource_uri, log_level):
     api = dsapi.DataStreamAPI(endpoint, CLIENT_ID, CLIENT_SECRET, log_level=log_level)
-    print api.get_package_status(resource_uri)
+    final_output = json.dumps(api.get_package_status(resource_uri),sort_keys=True, indent=2, separators=(',', ': '))
+    print pygments.highlight(final_output,JsonLexer(),TerminalFormatter(bg="dark"))
 
 
 

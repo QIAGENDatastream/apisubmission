@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 import dsapi
-import os, sys, argparse
+import os, sys, argparse, json
 import time
+import pygments
+from pygments.lexers import JsonLexer
+from pygments.formatters import TerminalFormatter
 
 def main(endpoint, files_to_upload, log_level):
     api = dsapi.DataStreamAPI(endpoint, CLIENT_ID, CLIENT_SECRET, log_level=log_level)
@@ -9,7 +12,9 @@ def main(endpoint, files_to_upload, log_level):
         print >>sys.stderr, "Starting to upload %s" % file
         api.refresh_token()
         (resource_uri, err_msg) = api.submit_one_zipfile(file)
-        print api.get_package_status(resource_uri)
+        final_output = json.dumps(api.get_package_status(resource_uri),sort_keys=True, indent=2, separators=(',', ': '))
+        print pygments.highlight(final_output,JsonLexer(),TerminalFormatter(bg="dark"))
+
 
 
 
