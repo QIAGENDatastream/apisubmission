@@ -40,11 +40,11 @@ export ING_CLIENT_ID=[your client id]
         --client-secret SECRET
         supply client secret on the command line, or set an
         environment variable named ING_CLIENT_SECRET (default:
-            ad0f3a54e731aeaaf67d4121267f42d7)
+            ENV['ING_CLIENT_SECRET'])
         --client-id CLIENT_ID
         supply client id on the command, or set an environment
         variable named ING_CLIENT_ID (default:
-            e0a2ca305e25678dc72efbb3bb9d4ece)
+            ENV['ING_CLIENT_ID'])
         --logging-level LOG_LEVEL
         supplying debug will also start file logging for
     convenience (default: WARNING)
