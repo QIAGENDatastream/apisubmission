@@ -10,6 +10,7 @@ setup(name='dsapi',
         packages=['dsapi'],
         install_requires=['requests',
             'logging',
+            'pygments',
             ],
 
         scripts=['bin/ds_upload.py',

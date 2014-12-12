@@ -29,7 +29,7 @@ class DataStreamAPI(object):
         self.session = requests.Session()
         self.session.mount(endpoint, tlsHttpAdapter())
         self.logger = self.configure_logging(log_level)
-        
+        self.logger.info("Using %s as endpoint" % endpoint)        
 
     @property
     def authid(self):

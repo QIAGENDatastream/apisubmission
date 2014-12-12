@@ -19,13 +19,15 @@ if __name__ == "__main__":
     if 'ING_CLIENT_ID' in os.environ:
         client_id = os.environ['ING_CLIENT_ID']
     parser = argparse.ArgumentParser("Simple Script to check status of package", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--server', action="store", dest="server", default="https://api.ingenuity.com/datastream/api/v1/", help="url of upload endpoint")
+    parser.add_argument('--server', action="store", dest="server", default="https://api.ingenuity.com", help="url of upload endpoint")
     parser.add_argument('--status_url', action="store", dest="status_url", help="status_url_of_package")
     parser.add_argument('--dp_id', action="store", dest="dp_id", help="DP_ID of package")
     parser.add_argument('--client-secret', action="store", default=secret, dest="secret", help="supply client secret on the command line, or set an environment variable named ING_CLIENT_SECRET")
     parser.add_argument('--client-id', action="store", default=client_id, dest="client_id", help="supply client id on the command, or set an environment variable named ING_CLIENT_ID")
     parser.add_argument('--logging-level', action="store", dest="log_level", default="WARNING", help="supplying debug will also start file logging for convenience")
     args = parser.parse_args()
+    endpoint = args.server + "/datastream/api/v1/";
+    dp_query = args.server + "/v1/datapackages/"
     if not args.secret:
         parser.print_help()
         print >>sys.stderr, "\n\nPlease set the environment variable ING_CLIENT_SECRET \
@@ -46,7 +48,7 @@ if __name__ == "__main__":
         print >>sys.stderr, "\n\nERROR:Please supply a status url or a DP_ID to make a status query"
         sys.exit(1)
     if args.dp_id:
-        status_url = "https://api.ingenuity.com/v1/datapackages/"  + args.dp_id
+        status_url = dp_query  + args.dp_id
     else:
         status_url = args.status_url
-    main(args.server, status_url, args.log_level)
+    main(endpoint, status_url, args.log_level)
