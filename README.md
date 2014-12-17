@@ -46,7 +46,7 @@ export ING_CLIENT_ID=[your client id]
         variable named ING_CLIENT_ID (default:
             ENV['ING_CLIENT_ID'])
         --logging-level LOG_LEVEL
-        supplying debug will also start file logging for
+        supplying DEBUG will also start file logging for
     convenience (default: WARNING)
 
 
