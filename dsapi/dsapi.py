@@ -1,6 +1,6 @@
 #/!/usr/bin/env python
 
-import requests, sys, os, logging, datetime, time, json
+import requests, sys, os, logging, datetime, time, json, urllib, re
 import ssl
 ssl.OP_NO_TLSv1_2=True
 ssl.op_NO_TLSv1_1=True
@@ -21,7 +21,7 @@ class tlsHttpAdapter(HTTPAdapter):
 
 
 class DataStreamAPI(object):
-    def __init__(self, endpoint, clientid, clientsecret,log_level="WARNING"):
+    def __init__(self, endpoint, clientid, clientsecret,log_level="INFO"):
         self._endpoint = endpoint
         self._clientid = clientid
         self._clientsecret = clientsecret
@@ -90,15 +90,19 @@ class DataStreamAPI(object):
         self._authid = self.__api_get_auth_key(self._endpoint, self._clientid, self._clientsecret)
         self.session.headers.update({"Authorization": self._authid})
     def export_vcf(self, dp_id, output_file="temp.vcf"):
-        print dp_id
-        url = "%s/export/%s" % (self.endpoint, urllib.quote_plus(dp_id))
-        self.logger.info("Export url: %s" % url)
+        m = re.search("(^http.*.com)", self.endpoint)
+        if(m):
+           endpoint = m.group(1)
+        else:
+           self.logger.critical("Unable to extract root server from endpoint to construct export URI: %s" % self.endpoint)
+        url = "%s/v1/export/%s" % (endpoint, urllib.quote_plus(dp_id))
+        self.logger.debug("Export url: %s" % url)
         params = {}
-        self.refresh_token()
         params['access_token']= self._authid
-        r = self.session.get(url, params=params, stream=True,headers={"Authorization":self._authid})
-        self.logger.info("Export status code: %s" % r.status_code)
+        r = self.session.get(url, params=params, stream=True)
+        self.logger.debug("Export status code: %s" % r.status_code)
         return_data = ""
+        self.logger.info("Writing VCF out to %s" % output_file)
         with open(output_file, 'wb') as f:
             for chunk in r.iter_content(chunk_size=1024): 
                 if chunk: # filter out keep-alive new chunks
@@ -140,7 +144,7 @@ class DataStreamAPI(object):
             return (None, r.text) 
         data = r.json()
         self.logger.debug("Finished POSTing package to %s" % (url))
-        self.logger.debug("Json Package submission return:%s" % (json.dumps(r.json(), sort_keys = True, indent=2)))
+        #self.logger.debug("Json Package submission return:%s" % (json.dumps(r.json(), sort_keys = True, indent=2)))
         resource_uri = data['status-url']
         return (resource_uri, None)
 
@@ -176,7 +180,7 @@ class DataStreamAPI(object):
         if level == "DEBUG":
             level = logging.DEBUG
         else:
-            level == logging.WARNING
+            level = logging.INFO
         log_format_details = '%s(asctime)-15s %(name)-5s %(levelname)-8s %(message)s'
         log_format_summary = '%(asctime)-15s   %(levelname)-8s    %(message)s'
         logger = logging.getLogger('datastream')
@@ -187,7 +191,7 @@ class DataStreamAPI(object):
         formatter = logging.Formatter(log_format_summary)
         ch.setFormatter(formatter)
         logger.addHandler(ch)
-
+       
         datetimestamp = str(datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S"))
         if(level == "DEBUG"):
             filelog = logging.FileHandler('details=%s.log' % (datetimestamp))
