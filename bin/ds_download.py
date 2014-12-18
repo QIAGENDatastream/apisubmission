@@ -25,7 +25,7 @@ if __name__ == "__main__":
     parser.add_argument('--dp_id', action="store", dest="dp_id", help="DP_ID of package")
     parser.add_argument('--client-secret', action="store", default=secret, dest="secret", help="supply client secret on the command line, or set an environment variable named ING_CLIENT_SECRET")
     parser.add_argument('--client-id', action="store", default=client_id, dest="client_id", help="supply client id on the command, or set an environment variable named ING_CLIENT_ID")
-    parser.add_argument('--logging-level', action="store", dest="log_level", default="WARNING", help="supplying debug will also start file logging for convenience")
+    parser.add_argument('--logging-level', action="store", dest="log_level", default="INFO", help="supplying debug will also start file logging for convenience")
     args = parser.parse_args()
     if not args.secret:
         parser.print_help()

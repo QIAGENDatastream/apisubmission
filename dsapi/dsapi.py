@@ -21,6 +21,8 @@ class tlsHttpAdapter(HTTPAdapter):
 
 
 class DataStreamAPI(object):
+    """Root Datastream API class that gives export, status, auth token generation, and zip submission
+       Instantiate with a server such as https://api.ingenuity.com along with OAuth ID/Secret access tokens to utilize """
     def __init__(self, server, clientid, clientsecret,log_level="INFO"):
         self.server = server
         self._endpoint = server + "/datastream/api/v1/"
@@ -174,6 +176,8 @@ class DataStreamAPI(object):
         return result.json()
        
     def configure_logging(self,level):
+        """ Configure log4j style logging module
+        FIXME: fix the levels to be settable to more than INFO and DEBUG"""
         if level == "DEBUG":
             level = logging.DEBUG
         else:
