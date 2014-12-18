@@ -5,8 +5,8 @@ import time
 import pygments
 from pygments.lexers import JsonLexer
 from pygments.formatters import TerminalFormatter
-def main(endpoint, dp_id, output_filename, log_level):
-    api = dsapi.DataStreamAPI(endpoint, CLIENT_ID, CLIENT_SECRET, log_level=log_level)
+def main(server, dp_id, output_filename, log_level):
+    api = dsapi.DataStreamAPI(server, CLIENT_ID, CLIENT_SECRET, log_level=log_level)
     api.refresh_token()
     output_file = api.export_vcf(dp_id, output_file=output_filename)
     if(output_file == None):
@@ -27,7 +27,6 @@ if __name__ == "__main__":
     parser.add_argument('--client-id', action="store", default=client_id, dest="client_id", help="supply client id on the command, or set an environment variable named ING_CLIENT_ID")
     parser.add_argument('--logging-level', action="store", dest="log_level", default="WARNING", help="supplying debug will also start file logging for convenience")
     args = parser.parse_args()
-    endpoint = args.server + "/datastream/api/v1/";
     if not args.secret:
         parser.print_help()
         print >>sys.stderr, "\n\nPlease set the environment variable ING_CLIENT_SECRET \
@@ -51,4 +50,4 @@ if __name__ == "__main__":
         output_filename = args.dp_id + ".vcf"
     else: 
         output_filename = args.vcf_filename
-    main(endpoint, args.dp_id, output_filename, args.log_level)
+    main(args.server, args.dp_id, output_filename, args.log_level)

@@ -21,15 +21,17 @@ class tlsHttpAdapter(HTTPAdapter):
 
 
 class DataStreamAPI(object):
-    def __init__(self, endpoint, clientid, clientsecret,log_level="INFO"):
-        self._endpoint = endpoint
+    def __init__(self, server, clientid, clientsecret,log_level="INFO"):
+        self.server = server
+        self._endpoint = server + "/datastream/api/v1/"
         self._clientid = clientid
         self._clientsecret = clientsecret
         self._authid = None
         self.session = requests.Session()
-        self.session.mount(endpoint, tlsHttpAdapter())
+        self.session.mount(self._endpoint, tlsHttpAdapter())
         self.logger = self.configure_logging(log_level)
-        self.logger.info("Using %s as endpoint" % endpoint)        
+        self.logger.info("Server is %s" % self.server)
+        self.logger.info("Using %s as endpoint" % self.endpoint)        
 
     @property
     def authid(self):
@@ -90,12 +92,7 @@ class DataStreamAPI(object):
         self._authid = self.__api_get_auth_key(self._endpoint, self._clientid, self._clientsecret)
         self.session.headers.update({"Authorization": self._authid})
     def export_vcf(self, dp_id, output_file="temp.vcf"):
-        m = re.search("(^http.*.com)", self.endpoint)
-        if(m):
-           endpoint = m.group(1)
-        else:
-           self.logger.critical("Unable to extract root server from endpoint to construct export URI: %s" % self.endpoint)
-        url = "%s/v1/export/%s" % (endpoint, urllib.quote_plus(dp_id))
+        url = "%s/v1/export/%s" % (self.server, urllib.quote_plus(dp_id))
         self.logger.debug("Export url: %s" % url)
         params = {}
         params['access_token']= self._authid

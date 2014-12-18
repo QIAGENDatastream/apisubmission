@@ -5,8 +5,8 @@ import time
 import pygments
 from pygments.lexers import JsonLexer
 from pygments.formatters import TerminalFormatter
-def main(endpoint, resource_uri, log_level):
-    api = dsapi.DataStreamAPI(endpoint, CLIENT_ID, CLIENT_SECRET, log_level=log_level)
+def main(server, resource_uri, log_level):
+    api = dsapi.DataStreamAPI(server, CLIENT_ID, CLIENT_SECRET, log_level=log_level)
     final_output = json.dumps(api.get_package_status(resource_uri),sort_keys=True, indent=2, separators=(',', ': '))
     print pygments.highlight(final_output,JsonLexer(),TerminalFormatter(bg="dark"))
 
@@ -26,7 +26,6 @@ if __name__ == "__main__":
     parser.add_argument('--client-id', action="store", default=client_id, dest="client_id", help="supply client id on the command, or set an environment variable named ING_CLIENT_ID")
     parser.add_argument('--logging-level', action="store", dest="log_level", default="WARNING", help="supplying debug will also start file logging for convenience")
     args = parser.parse_args()
-    endpoint = args.server + "/datastream/api/v1/";
     dp_query = args.server + "/v1/datapackages/"
     if not args.secret:
         parser.print_help()
@@ -51,4 +50,4 @@ if __name__ == "__main__":
         status_url = dp_query  + args.dp_id
     else:
         status_url = args.status_url
-    main(endpoint, status_url, args.log_level)
+    main(args.server, status_url, args.log_level)
