@@ -119,9 +119,10 @@ class DataStreamAPI(object):
         """
         self.logger.debug("Package archive: %s" % (zip_file_path))
         files = {'file':open(zip_file_path, 'rb')}
-        url = "%sdatapackages/?useJavaPipeline=true" % (self.endpoint)
+        url = "%sdatapackages/" % (self.endpoint)
         params = extra_api_params
         params['access_token']= self._authid
+        self.logger.debug("Params: %s" % params)
         headers = dict()
         headers['Authorization']=self._authid
         self.logger.info("Start POSTing package to %s" % (url))
@@ -132,16 +133,20 @@ class DataStreamAPI(object):
         self.logger.debug("post url: %s headers: %s" % (r.url, headers))
         self.logger.debug("Post Result: %s"% r.status_code)
         if r.status_code != 201 and r.status_code!=200:
+            self.logger.debug(r.text);
             for x in range(10):
                 time.sleep(.5)
-                r = s.post(url, files=files, data=params)
+                r = s.post(url, files=files, data=params, headers=headers)
                 self.logger.debug("Post Result: %s"% r.status_code)
                 if r.status_code == 201 or r.status_code == 200:
                     break;
         if r.status_code !=201 and r.status_code !=200:
             self.logger.critical("Unable to get post file after 10 tries, last status_code: %s" % r.status_code)
             return (None, r.text) 
-        data = r.json()
+        try:
+            data = r.json()
+        except:
+            print r.text
         self.logger.debug("Finished POSTing package to %s" % (url))
         #self.logger.debug("Json Package submission return:%s" % (json.dumps(r.json(), sort_keys = True, indent=2)))
         resource_uri = data['status-url']
