@@ -7,7 +7,8 @@ ssl.op_NO_TLSv1_1=True
 ####mods to force tls1#####
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.poolmanager import PoolManager
-
+import ftplib, getpass
+ftplib.FTP_TLS.ssl_version=ssl.PROTOCOL_TLSv1
 
 class tlsHttpAdapter(HTTPAdapter):
     """"Transport adapter" that allows us to force use of TLSv1."""
@@ -23,17 +24,37 @@ class tlsHttpAdapter(HTTPAdapter):
 class DataStreamAPI(object):
     """Root Datastream API class that gives export, status, auth token generation, and zip submission
        Instantiate with a server such as https://api.ingenuity.com along with OAuth ID/Secret access tokens to utilize """
-    def __init__(self, server, clientid, clientsecret,log_level="INFO"):
+    def __init__(self, server, clientid, clientsecret, log_level="INFO", ftp_dir=None, ftp_server="ftp2.ingenuity.com"):
         self.server = server
-        self._endpoint = server + "/datastream/api/v1/"
+        if self.server:
+            #if we just want to use FTP, don't do this
+            self._endpoint = server + "/datastream/api/v1/"
+            self.session = requests.Session()
+            self.logger.info("Server is %s" % self.server)
+            self.logger.info("Using %s as endpoint" % self.endpoint)
+            self.session.mount(self._endpoint, tlsHttpAdapter())
         self._clientid = clientid
         self._clientsecret = clientsecret
         self._authid = None
-        self.session = requests.Session()
-        self.session.mount(self._endpoint, tlsHttpAdapter())
+        self.ftp_server = ftp_server
+        self.ftp_dir = ftp_dir
+        self.user_name = None
+        self.passwd= None
+        self.ftp_conn = None
         self.logger = self.configure_logging(log_level)
-        self.logger.info("Server is %s" % self.server)
-        self.logger.info("Using %s as endpoint" % self.endpoint)        
+        if(self.ftp_dir):
+            self.logger.info("FTP server is: %s, dir is: %s" % (self.ftp_server, self.ftp_dir))
+
+    def connect_to_ftp(self):
+        if not self.user_name:
+            self.user_name = raw_input("Enter your Ingenuity/FTP username:")
+        if not self.passwd:
+            self.passwd = getpass.getpass("Enter password for %s:" % self.user_name)
+        ftps = ftplib.FTP_TLS(self.ftp_server, self.user_name, self.passwd)
+        ftps.prot_p()
+        self.logger.info("Connected to FTP...changing dir to %s" % self.ftp_dir)
+        ftps.cwd(self.ftp_dir)
+        return ftps
 
     @property
     def authid(self):
@@ -146,11 +167,30 @@ class DataStreamAPI(object):
         try:
             data = r.json()
         except:
-            print r.text
+            self.logger.critical("Return data from post is not Json:")
+            self.logger.critical(r.text)
+            sys.exit(1)
+
         self.logger.debug("Finished POSTing package to %s" % (url))
         #self.logger.debug("Json Package submission return:%s" % (json.dumps(r.json(), sort_keys = True, indent=2)))
         resource_uri = data['status-url']
         return (resource_uri, None)
+
+    def ftp_upload(self, file):
+        if self.ftp_conn:
+            try:
+                self.ftp_conn.voidcmd("NOOP")
+            except:
+                self.ftp_conn = self.connect_to_ftp()
+        else:
+            self.ftp_conn = self.connect_to_ftp()
+        fh = open(file, "rb")
+        try:
+            self.ftp_conn.storbinary("STOR %s" % file, fh)
+        except:
+            self.logger.debug("Error executing STOR command on %s" % file)
+            sys.exit(1)
+        return 1
 
     def get_package_status(self, package_uri, extra_api_params={}):
         """ Thin wrapper for the REST call to retrieve status object
