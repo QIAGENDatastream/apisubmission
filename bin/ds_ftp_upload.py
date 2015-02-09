@@ -20,7 +20,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser("Simple Script to Upload files via FTP", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--server', action="store", dest="server", default="ftps2.ingenuity.com", help="url of FTP server to construct URIs with")
     parser.add_argument('--logging-level', action="store", dest="log_level", default="INFO", help="supplying debug will also start file logging for convenience")
-    parser.add_argument('--upload-dir', action="store", dest="upload_dir", default=None, help="supply a directory to upload instead of files via the command lines")
     parser.add_argument('--ftp-dir', action="store", dest="ftp_dir", help="directory top upload to (should be in emailed instructions")
     parser.add_argument('--finish', action="store_true", default=False, help="send 'package is done' signal at end of transfer")
     parser.add_argument('--username', action="store", dest="user", help="ingenuity username (email address you registered with", default=None)
@@ -31,5 +30,7 @@ if __name__ == "__main__":
         parser.print_help()
         print >>sys.stderr, "\n\nERROR:Please supply a valid filename, %s does not appear to be a valid file" % args.pkg
         sys.exit(1)
-    print args.files
+    if args.ftp_dir==None:
+        print >>sys.stderr,"ERROR: NEED FTP DIR TO PERFORM UPLOAD"
+        sys.exit(1)
     main(args.server, args.files, args.log_level, args.ftp_dir, args.finish, args.user, args.passwd)
