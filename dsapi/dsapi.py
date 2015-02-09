@@ -186,9 +186,10 @@ class DataStreamAPI(object):
             self.ftp_conn = self.connect_to_ftp()
         fh = open(file, "rb")
         try:
-            self.ftp_conn.storbinary("STOR %s" % file, fh)
-        except:
-            self.logger.debug("Error executing STOR command on %s" % file)
+            self.logger.info("Uploading %s" % file)
+            self.ftp_conn.storbinary("STOR %s" % os.path.basename(file), fh)
+        except Exception, e:
+            self.logger.critical("Error executing STOR command on %s: %s" % (file, e))
             sys.exit(1)
         return 1
 
