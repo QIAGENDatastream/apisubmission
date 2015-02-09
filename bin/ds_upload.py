@@ -7,7 +7,7 @@ from pygments.lexers import JsonLexer
 from pygments.formatters import TerminalFormatter
 
 def main(server, files_to_upload, log_level, strict_mode):
-    api = dsapi.DataStreamAPI(server, CLIENT_ID, CLIENT_SECRET, log_level=log_level)
+    api = dsapi.DataStreamAPI(CLIENT_ID, CLIENT_SECRET, server=server, log_level=log_level)
     for file in files_to_upload:
         print >>sys.stderr, "Starting to upload %s" % file
         api.refresh_token()

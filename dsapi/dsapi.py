@@ -24,8 +24,9 @@ class tlsHttpAdapter(HTTPAdapter):
 class DataStreamAPI(object):
     """Root Datastream API class that gives export, status, auth token generation, and zip submission
        Instantiate with a server such as https://api.ingenuity.com along with OAuth ID/Secret access tokens to utilize """
-    def __init__(self, server, clientid, clientsecret, log_level="INFO", ftp_dir=None, ftp_server="ftp2.ingenuity.com"):
+    def __init__(self, clientid, clientsecret, log_level="INFO", ftp_dir=None, ftp_server="ftp2.ingenuity.com", server="https://api.ingenuity.com"):
         self.server = server
+        self.logger = self.configure_logging(log_level)
         if self.server:
             #if we just want to use FTP, don't do this
             self._endpoint = server + "/datastream/api/v1/"
@@ -41,7 +42,6 @@ class DataStreamAPI(object):
         self.user_name = None
         self.passwd= None
         self.ftp_conn = None
-        self.logger = self.configure_logging(log_level)
         if(self.ftp_dir):
             self.logger.info("FTP server is: %s, dir is: %s" % (self.ftp_server, self.ftp_dir))
 
@@ -192,12 +192,22 @@ class DataStreamAPI(object):
             self.logger.critical("Error executing STOR command on %s: %s" % (file, e))
             sys.exit(1)
         return 1
+    def ftp_finish(self):
+    #POST https://api.ingenuity.com/datastream//api/v1/datastreams/ds2N93amCwTYz4p2bfcjYa1klSra/submit
+        ftp_dir_fields = self.ftp_dir.split("_")
+        #key will be last field in directory name right now
+        submit_key = ftp_dir_fields[-1]
+        url = self.endpoint + "datastreams/%s/submit" % submit_key
+        self.logger.debug("FTP FINISH URL:%s" % url) 
+        self.logger.info("Sending finish POST for FTP package")
+        self.logger.info(self.session.post(url))
+
 
     def get_package_status(self, package_uri, extra_api_params={}):
         """ Thin wrapper for the REST call to retrieve status object
-        FIXME: check authid validity and refresh if necessary
-        FIXME: check HTTP return codes
-        """
+       FIXME: check authid validity and refresh if necessary
+       FIXME: check HTTP return codes
+       """
         params = {}
         self.refresh_token()
 #alternate ways to get the package status if your ssl version is causing problems
@@ -212,7 +222,7 @@ class DataStreamAPI(object):
 #       result = output.communicate()[0]
 #       self.logger.debug("Curl/Wget return code: %s" % curl.returncode)
 #       self.logger.debug("Json package status return:\n%s"% (json.dumps(result, sort_keys=True, indent=2)))
-#        self.logger.debug(" ".join(cmd))
+#         self.logger.debug(" ".join(cmd))
         try:
             self.logger.debug("status url: %s" % url)
             result = self.session.get(url)
@@ -220,7 +230,7 @@ class DataStreamAPI(object):
             self.logger.error("connection error on status get: %s" % e)
             sys.exit(1)
         return result.json()
-       
+      
     def configure_logging(self,level):
         """ Configure log4j style logging module
         FIXME: fix the levels to be settable to more than INFO and DEBUG"""

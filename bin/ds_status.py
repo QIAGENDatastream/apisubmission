@@ -6,7 +6,7 @@ import pygments
 from pygments.lexers import JsonLexer
 from pygments.formatters import TerminalFormatter
 def main(server, resource_uri, log_level):
-    api = dsapi.DataStreamAPI(server, CLIENT_ID, CLIENT_SECRET, log_level=log_level)
+    api = dsapi.DataStreamAPI( CLIENT_ID, CLIENT_SECRET, server=server, log_level=log_level)
     final_output = json.dumps(api.get_package_status(resource_uri),sort_keys=True, indent=2, separators=(',', ': '))
     print pygments.highlight(final_output,JsonLexer(),TerminalFormatter(bg="dark"))
 

@@ -6,7 +6,7 @@ import pygments
 from pygments.lexers import JsonLexer
 from pygments.formatters import TerminalFormatter
 def main(server, dp_id, output_filename, log_level):
-    api = dsapi.DataStreamAPI(server, CLIENT_ID, CLIENT_SECRET, log_level=log_level)
+    api = dsapi.DataStreamAPI(CLIENT_ID, CLIENT_SECRET, server=server, log_level=log_level)
     api.refresh_token()
     output_file = api.export_vcf(dp_id, output_file=output_filename)
     if(output_file == None):
