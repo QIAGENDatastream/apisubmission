@@ -24,7 +24,7 @@ class tlsHttpAdapter(HTTPAdapter):
 class DataStreamAPI(object):
     """Root Datastream API class that gives export, status, auth token generation, and zip submission
        Instantiate with a server such as https://api.ingenuity.com along with OAuth ID/Secret access tokens to utilize """
-    def __init__(self, clientid, clientsecret, log_level="INFO", ftp_dir=None, ftp_server="ftp2.ingenuity.com", server="https://api.ingenuity.com"):
+    def __init__(self, clientid, clientsecret, log_level="INFO", ftp_dir=None, ftp_server="ftp2.ingenuity.com", server="https://api.ingenuity.com", ftp_user=None,ftp_pass=None):
         self.server = server
         self.logger = self.configure_logging(log_level)
         if self.server:
@@ -39,8 +39,8 @@ class DataStreamAPI(object):
         self._authid = None
         self.ftp_server = ftp_server
         self.ftp_dir = ftp_dir
-        self.user_name = None
-        self.passwd= None
+        self.user_name = ftp_user
+        self.passwd= ftp_pass
         self.ftp_conn = None
         if(self.ftp_dir):
             self.logger.info("FTP server is: %s, dir is: %s" % (self.ftp_server, self.ftp_dir))
@@ -200,7 +200,7 @@ class DataStreamAPI(object):
         url = self.endpoint + "datastreams/%s/submit" % submit_key
         self.logger.debug("FTP FINISH URL:%s" % url) 
         self.logger.info("Sending finish POST for FTP package")
-        self.logger.info(self.session.post(url))
+        return self.session.post(url)
 
 
     def get_package_status(self, package_uri, extra_api_params={}):
