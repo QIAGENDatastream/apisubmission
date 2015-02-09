@@ -72,14 +72,14 @@ export ING_CLIENT_ID=[your client id]
         ftps2.ingenuity.com)
     --logging-level LOG_LEVEL
         supplying debug will also start file logging for
-    convenience (default: INFO)
-        --ftp-dir FTP_DIR     directory top upload to (should be in emailed
-            instructions (default: None)
-            --finish              send 'package is done' signal at end of transfer
-            (default: False)
-            --username USER       ingenuity username (email address you registered with
-                (default: None)
-                --password PASSWD     password for automated applications (default: None)
+        aconvenience (default: INFO)
+    --ftp-dir FTP_DIR     directory top upload to (should be in emailed
+        instructions (default: None)
+    --finish              send 'package is done' signal at end of transfer
+        (default: False)
+    --username USER       ingenuity username (email address you registered with
+        (default: None)
+    --password PASSWD     password for automated applications (default: None)
 
 
      ds_ftp_upload.py --ftp-dir=for_johndoe@ingenuity.com_FTP_Test_ds2N93amCwTYz4p2bfcjYa1klSra test_data/a_ldt_92344.txt test_data/i_ldt_92344.txt test_data/r_001.txt test_data/s_001.txt test_data/hiseq_v3.1_run943-2_4025.vcf 
