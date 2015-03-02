@@ -19,5 +19,6 @@ setup(name='dsapi',
                  'bin/ds_status.py',
                  'bin/ds_download.py',
                  'bin/ds_ftp_upload.py',
+                 'bin/ds_server_status.py',
                     ],
         zip_safe=False)

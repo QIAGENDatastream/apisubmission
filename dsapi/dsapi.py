@@ -50,8 +50,12 @@ class DataStreamAPI(object):
             self.user_name = raw_input("Enter your Ingenuity/FTP username:")
         if not self.passwd:
             self.passwd = getpass.getpass("Enter password for %s:" % self.user_name)
-        ftps = ftplib.FTP_TLS(self.ftp_server, self.user_name, self.passwd)
-        ftps.prot_p()
+        try:
+            ftps = ftplib.FTP_TLS(self.ftp_server, self.user_name, self.passwd)
+            ftps.prot_p()
+        except Exception, e:
+            self.logger.critical("Caught exception trying to log in to FTP-TLS: %s" % e);
+            sys.exit(1)
         self.logger.info("Connected to FTP...changing dir to %s" % self.ftp_dir)
         ftps.cwd(self.ftp_dir)
         return ftps
@@ -83,7 +87,19 @@ class DataStreamAPI(object):
     @clientsecret.setter
     def package_dir(self, clientsecret):
         self._clientsecret = clientsecret
-
+    
+    def is_endpoint_up(self):
+        """check if API server is up"""
+        code = self.session.get(self.endpoint + "datapackages/").status_code
+        if(code == 401):
+            return True
+        elif(code ==503):
+            return False
+        else:
+            self.logger.critical("Unexpected status code from endpoint test: %s" % code)
+            return False
+        
+        
     def __api_get_auth_key(self, endpoint, clientid, clientsecret):
         """low-level private method to obtain a refreshed auth key from DataStream API
         """
