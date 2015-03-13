@@ -1,6 +1,6 @@
 #/!/usr/bin/env python
 
-import requests, sys, os, logging, datetime, time, json, urllib, re
+import requests, sys, os, logging, datetime, time, json, urllib, re, urlparse
 import ssl
 ssl.OP_NO_TLSv1_2=True
 ssl.op_NO_TLSv1_1=True
@@ -156,7 +156,8 @@ class DataStreamAPI(object):
         """
         self.logger.debug("Package archive: %s" % (zip_file_path))
         files = {'file':open(zip_file_path, 'rb')}
-        url = "%sdatapackages/" % (self.endpoint)
+#        url = "%s/v1/datapackages/" % (self.server)
+        url = urlparse.urljoin(self.server, "/v1/datapackages/")
         params = extra_api_params
         params['access_token']= self._authid
         self.logger.debug("Params: %s" % params)
